@@ -52,6 +52,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.headers().frameOptions().disable();
+        // This one i authorize a request to an Access for Only H2-CONSOLE DB
+        http.authorizeRequests().antMatchers("/h2-console/").permitAll();
         //http.formLogin(); // if Desactived it will not give the rights to acces to resources
         http.authorizeRequests().anyRequest().authenticated();
     }
