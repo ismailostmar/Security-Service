@@ -33,7 +33,6 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AppRole addNewRole(AppRole appRole) {
-
         return appRoleRepository.save(appRole);
     }
 
