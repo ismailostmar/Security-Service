@@ -1,8 +1,12 @@
 package org.sid.SecurityService.Sec;
 
 import org.sid.SecurityService.Sec.Entities.AppUser;
+import org.sid.SecurityService.Sec.Filters.JwtAuthenticationFilter;
 import org.sid.SecurityService.Sec.Services.AccountService;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -53,8 +57,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.headers().frameOptions().disable();
         // This one i authorize a request to an Access for Only H2-CONSOLE DB
-        http.authorizeRequests().antMatchers("/h2-console/").permitAll();
+        http.authorizeRequests().antMatchers("/h2-console/**").permitAll();
         //http.formLogin(); // if Desactived it will not give the rights to acces to resources
         http.authorizeRequests().anyRequest().authenticated();
+        http.addFilter(new JwtAuthenticationFilter(authenticationManagerBean()));
+
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 }
