@@ -30,6 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 
+        // Statful Authentication with Session ID
         // User details Service for Security Access using the User Spring
         auth.userDetailsService(new UserDetailsService() {
             @Override
