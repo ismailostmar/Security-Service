@@ -61,15 +61,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
         // This one i authorize a request to an Access for Only H2-CONSOLE DB
         // Http FormLogin();
-        http.authorizeRequests().antMatchers("/h2-console/**").permitAll();
+        http.authorizeRequests().antMatchers("/h2-console/**","/refreshToken/**","/login/**").permitAll();
 
         // Pour les Autorisation des Users or Admin
-        http.authorizeRequests().antMatchers(HttpMethod.POST,"/users/**").hasAuthority("ADMIN");
-        http.authorizeRequests().antMatchers(HttpMethod.GET,"/users/**").hasAuthority("USER");
+        //http.authorizeRequests().antMatchers(HttpMethod.POST,"/users/**").hasAuthority("ADMIN");
+        //http.authorizeRequests().antMatchers(HttpMethod.GET,"/users/**").hasAuthority("USER");
 
         //http.formLogin(); // if Desactived it will not give the rights to acces to resources
         http.authorizeRequests().anyRequest().authenticated();
-
         http.addFilter(new JwtAuthenticationFilter(authenticationManagerBean()));
         http.addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
