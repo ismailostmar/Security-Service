@@ -2,10 +2,12 @@ package org.sid.SecurityService.Sec;
 
 import org.sid.SecurityService.Sec.Entities.AppUser;
 import org.sid.SecurityService.Sec.Filters.JwtAuthenticationFilter;
+import org.sid.SecurityService.Sec.Filters.JwtAuthorizationFilter;
 import org.sid.SecurityService.Sec.Services.AccountService;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,6 +20,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,11 +60,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.headers().frameOptions().disable();
         // This one i authorize a request to an Access for Only H2-CONSOLE DB
+        // Http FormLogin();
         http.authorizeRequests().antMatchers("/h2-console/**").permitAll();
+
+        // Pour les Autorisation des Users or Admin
+        http.authorizeRequests().antMatchers(HttpMethod.POST,"/users/**").hasAuthority("ADMIN");
+        http.authorizeRequests().antMatchers(HttpMethod.GET,"/users/**").hasAuthority("USER");
+
         //http.formLogin(); // if Desactived it will not give the rights to acces to resources
         http.authorizeRequests().anyRequest().authenticated();
-        http.addFilter(new JwtAuthenticationFilter(authenticationManagerBean()));
 
+        http.addFilter(new JwtAuthenticationFilter(authenticationManagerBean()));
+        http.addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean

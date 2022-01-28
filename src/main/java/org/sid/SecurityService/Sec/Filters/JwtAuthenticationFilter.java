@@ -2,6 +2,7 @@ package org.sid.SecurityService.Sec.Filters;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -44,12 +47,27 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // i cast the User because the Method getPrincipal returns ( ce n'est pas générique et aussi un objet de type Object).
         User user=(User) authResult.getPrincipal();
         Algorithm algo1 = Algorithm.HMAC256("mySecret1234");
+
+        // JWT : Access Token
         String jwtAccessToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+5*60*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis()+1*60*1000))
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles",user.getAuthorities().stream().map(ga->ga.getAuthority()).collect(Collectors.toList()))
                 .sign(algo1);
-        response.setHeader("Authorization",jwtAccessToken);
+
+
+        // JWT : Refresh Token
+        String jwtRefreshToken = JWT.create()
+                .withSubject(user.getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis()+15*60*1000))
+                .withIssuer(request.getRequestURL().toString())
+                .sign(algo1);
+
+        Map<String,String> idToken = new HashMap<>();
+        idToken.put("access-token",jwtAccessToken);
+        idToken.put("refresh-token",jwtRefreshToken);
+        response.setContentType("application/json");
+        new ObjectMapper().writeValue(response.getOutputStream(),idToken);
     }
 }
