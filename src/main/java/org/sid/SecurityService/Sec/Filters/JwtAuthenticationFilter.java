@@ -3,6 +3,7 @@ package org.sid.SecurityService.Sec.Filters;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.sid.SecurityService.Sec.JWTUtile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -46,12 +47,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         System.out.println("successfulAuthentication");
         // i cast the User because the Method getPrincipal returns ( ce n'est pas générique et aussi un objet de type Object).
         User user=(User) authResult.getPrincipal();
-        Algorithm algo1 = Algorithm.HMAC256("mySecret1234");
+        Algorithm algo1 = Algorithm.HMAC256(JWTUtile.SECRET);
 
         // JWT : Access Token
         String jwtAccessToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+10*60*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis()+JWTUtile.EXPIRE_ACCESS_TOKEN))
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("roles",user.getAuthorities().stream().map(ga->ga.getAuthority()).collect(Collectors.toList()))
                 .sign(algo1);
@@ -60,7 +61,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         // JWT : Refresh Token
         String jwtRefreshToken = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis()+15*60*1000))
+                .withExpiresAt(new Date(System.currentTimeMillis()+JWTUtile.EXPIRE_REFRESH_TOKEN))
                 .withIssuer(request.getRequestURL().toString())
                 .sign(algo1);
 

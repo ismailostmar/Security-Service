@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.sid.SecurityService.Sec.JWTUtile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,12 +26,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request,response);
         }
         else {
-        String authorizationToken = request.getHeader("Authorization");
-        if (authorizationToken != null && authorizationToken.startsWith("Bearer ")) {
+        String authorizationToken = request.getHeader(JWTUtile.AUTH_HEADER);
+        if (authorizationToken != null && authorizationToken.startsWith(JWTUtile.PREFIX)) {
             try {
-                // Teste de requete et Verification
+                // Test of request and Verification
                 String jwt = authorizationToken.substring(7);
-                Algorithm algorithm = Algorithm.HMAC256("mySecret1234");
+                Algorithm algorithm = Algorithm.HMAC256(JWTUtile.SECRET);
 
                 // Verification
                 JWTVerifier jwtVerifier= JWT.require(algorithm).build();
@@ -44,16 +45,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                     authorities.add(new SimpleGrantedAuthority(r));
                 }
 
-                // Pour Athentifier l'utilisateur
+                // for the User can Authenticated
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(username,null,authorities);
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                // Apres Authentification
+                // Before Authentication
                 filterChain.doFilter(request,response);
             }
             catch (Exception e){
                 response.setHeader("error-message",e.getMessage());
-                // Si le Token est expiré , Alors l'user n'as pas le droit
+                // if The Token has Expired , so the User are not allowed to access
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
             }
         }
